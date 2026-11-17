@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bank DApp | Sepolia</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: rgba(20, 29, 53, 0.88);
+        --panel2: #17223d;
+        --text: #eef3ff;
+        --muted: #9eacc9;
+        --line: rgba(160, 180, 220, 0.16);
+        --blue: #6c8cff;
+        --cyan: #51d6e8;
+        --green: #35d49a;
+        --red: #ff7185;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        background:
+          radial-gradient(circle at 15% 5%, #263b79 0, transparent 34%),
+          radial-gradient(circle at 90% 20%, #153d58 0, transparent 28%),
+          var(--bg);
+      }
+      .wrap {
+        width: min(100% - 32px, 960px);
+        margin: 0 auto;
+        padding: 38px 0 56px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--blue), var(--cyan));
+        font-size: 22px;
+        box-shadow: 0 8px 28px #5278ff44;
+      }
+      h1 {
+        font-size: clamp(24px, 4vw, 34px);
+        margin: 0;
+        letter-spacing: -0.6px;
+      }
+      .sub {
+        color: var(--muted);
+        margin-top: 4px;
+        font-size: 13px;
+      }
+      button {
+        border: 0;
+        cursor: pointer;
+        border-radius: 12px;
+        padding: 12px 17px;
+        color: white;
+        font-weight: 700;
+        background: linear-gradient(110deg, #587cff, #4e9ce8);
+        transition: 0.18s;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .outline {
+        background: #202d4b;
+        border: 1px solid var(--line);
+      }
+      .hero {
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel);
+        box-shadow: 0 18px 55px #0004;
+        margin-bottom: 18px;
+      }
+      .student {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .eyebrow {
+        color: var(--cyan);
+        text-transform: uppercase;
+        letter-spacing: 1.6px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .student h2 {
+        margin: 8px 0 4px;
+        font-size: 21px;
+      }
+      .student p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .network {
+        color: #b9c8ff;
+        background: #26365e;
+        border: 1px solid #5068a4;
+        padding: 8px 12px;
+        border-radius: 99px;
+        font-size: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 18px;
+      }
+      .card {
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: var(--panel);
+        box-shadow: 0 14px 40px #0003;
+      }
+      .card h3 {
+        margin: 0 0 7px;
+        font-size: 18px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+        margin: 0 0 18px;
+      }
+      label {
+        display: block;
+        color: #c3cde3;
+        font-size: 12px;
+        font-weight: 700;
+        margin: 13px 0 7px;
+      }
+      input {
+        width: 100%;
+        color: var(--text);
+        background: #0d162b;
+        border: 1px solid #344363;
+        border-radius: 11px;
+        padding: 13px 14px;
+        outline: none;
+        font: inherit;
+      }
+      input:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px #6c8cff22;
+      }
+      .row {
+        display: flex;
+        gap: 9px;
+      }
+      .row input {
+        min-width: 0;
+      }
+      .row button {
+        white-space: nowrap;
+      }
+      .balance {
+        margin: 16px 0 18px;
+        padding: 18px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #1b2d53, #173d50);
+        border: 1px solid #5572a055;
+      }
+      .balance small {
+        color: #b5c6e9;
+      }
+      .amount {
+        font-size: clamp(30px, 6vw, 42px);
+        font-weight: 800;
+        margin: 5px 0;
+        letter-spacing: -1px;
+      }
+      .unit {
+        color: var(--cyan);
+        font-size: 14px;
+      }
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .actions button {
+        width: 100%;
+      }
+      .status {
+        min-height: 44px;
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #111b31;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .status.ok {
+        color: #8df0c5;
+        border-color: #35d49a55;
+      }
+      .status.err {
+        color: #ff9aaa;
+        border-color: #ff718555;
+      }
+      .wallet {
+        color: var(--muted);
+        font-size: 12px;
+        overflow-wrap: anywhere;
+        margin-top: 12px;
+      }
+      .foot {
+        color: #71809f;
+        text-align: center;
+        font-size: 12px;
+        margin-top: 24px;
+      }
+      .full {
+        grid-column: 1/-1;
+      }
+      @media (max-width: 720px) {
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <div class="brand">
+          <div class="logo">⌂</div>
+          <div>
+            <h1>Bank DApp</h1>
+            <div class="sub">Decentralized Banking · Ethereum Sepolia</div>
+          </div>
+        </div>
+        <button id="connectBtn">Connect MetaMask</button>
+      </header>
+
+      <section class="hero student">
+        <div>
+          <div class="eyebrow">Smart Contract Assignment</div>
+          <h2>ณัฐธิชา ลาสองชั้น</h2>
+          <p>รหัสนักศึกษา 66070195 · Computer Science · S.002 No.133</p>
+        </div>
+        <span class="network" id="networkPill">● Sepolia Test Network</span>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h3>บัญชีของฉัน</h3>
+          <p class="hint">
+            เชื่อมต่อ MetaMask และตรวจสอบยอดเงินที่บันทึกไว้ใน Smart Contract
+          </p>
+          <div class="balance">
+            <small>Available Balance</small>
+            <div class="amount" id="balance">—</div>
+            <div class="unit">ETH</div>
+          </div>
+          <button class="outline" id="checkBtn" disabled>
+            ↻ Check Balance
+          </button>
+          <div class="wallet" id="walletText">Wallet: ยังไม่ได้เชื่อมต่อ</div>
+        </article>
+
+        <article class="card">
+          <h3>ฝากเงิน · Deposit</h3>
+          <p class="hint">
+            ระบุจำนวน ETH ที่ต้องการฝาก ระบบจะเรียกฟังก์ชัน deposit() ของ Smart
+            Contract
+          </p>
+          <label for="depositAmount">จำนวนเงิน (ETH)</label>
+          <input
+            id="depositAmount"
+            type="number"
+            min="0"
+            step="any"
+            placeholder="เช่น 0.01"
+          />
+          <button
+            id="depositBtn"
+            style="width: 100%; margin-top: 14px"
+            disabled
+          >
+            Deposit ETH
+          </button>
+          <div
+            style="height: 1px; background: var(--line); margin: 24px 0"
+          ></div>
+          <h3>ถอนเงิน · Withdraw</h3>
+          <p class="hint">ถอนจากยอดคงเหลือของ Address ที่เชื่อมต่ออยู่</p>
+          <label for="withdrawAmount">จำนวนเงิน (ETH)</label>
+          <input
+            id="withdrawAmount"
+            type="number"
+            min="0"
+            step="any"
+            placeholder="เช่น 0.005"
+          />
+          <button
+            id="withdrawBtn"
+            class="outline"
+            style="width: 100%; margin-top: 14px"
+            disabled
+          >
+            Withdraw ETH
+          </button>
+        </article>
+
+        <article class="card full">
+          <h3>ตั้งค่า Smart Contract</h3>
+          <p class="hint">เชื่อมต่อ Bank Smart Contract บน Sepolia Network</p>
+          <label for="contractAddress"> Contract Address (Sepolia) </label>
+          <div class="row">
+            <input
+              id="contractAddress"
+              value="0x52201de6E9CB52a8de43BacD1606D96663473321"
+              placeholder="Contract Address"
+              spellcheck="false"
+            />
+            <button id="saveAddressBtn" class="outline">บันทึก</button>
+          </div>
+          <div id="status" class="status">พร้อมเชื่อมต่อ Smart Contract</div>
+        </article>
+      </section>
+      <div class="foot">
+        Bank DApp · ใช้ ETH ทดสอบบน Sepolia เท่านั้น · ทุกธุรกรรมต้องยืนยันผ่าน
+        MetaMask
+      </div>
+    </main>
+
+    <script>
+      const ABI = [
+        "function deposit() public payable",
+        "function withdraw(uint256 amount) public",
+        "function checkBlance() public view returns (uint256 balance)",
+        "event Deposit(address indexed owner, uint256 amount)",
+        "event Withdraw(address indexed owner, uint256 amount)",
+      ];
+      const SEPOLIA_CHAIN_ID = "0xaa36a7";
+      let provider, signer, contract, account;
+
+      const $ = (id) => document.getElementById(id);
+      const statusBox = $("status");
+      function status(message, type = "") {
+        statusBox.className = "status " + type;
+        statusBox.textContent = message;
+      }
+      function setConnected(enabled) {
+        ["checkBtn", "depositBtn", "withdrawBtn"].forEach(
+          (id) => ($(id).disabled = !enabled),
+        );
+      }
+      function getSavedAddress() {
+        const saved = localStorage.getItem("bankDappContractAddress");
+        if (saved) $("contractAddress").value = saved;
+        return saved || "";
+      }
+      function validAddress(value) {
+        return /^0x[a-fA-F0-9]{40}$/.test(value);
+      }
+      async function ensureSepolia() {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
+        if (chainId !== SEPOLIA_CHAIN_ID) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: SEPOLIA_CHAIN_ID }],
+            });
+          } catch (error) {
+            throw new Error(
+              "กรุณาเปลี่ยน Network ใน MetaMask เป็น Sepolia Test Network",
+            );
+          }
+        }
+      }
+      function buildContract() {
+        const address = $("contractAddress").value.trim();
+        if (!validAddress(address))
+          throw new Error("กรุณาใส่ Contract Address แบบเต็ม 42 ตัวอักษร");
+        contract = new ethers.Contract(address, ABI, signer);
+      }
+      $("saveAddressBtn").addEventListener("click", () => {
+        const address = $("contractAddress").value.trim();
+        if (!validAddress(address))
+          return status(
+            "Address ไม่ถูกต้อง กรุณาคัดลอก Address แบบเต็มจาก Remix",
+            "err",
+          );
+        localStorage.setItem("bankDappContractAddress", address);
+        try {
+          if (signer) buildContract();
+          status("บันทึก Contract Address แล้ว", "ok");
+        } catch (e) {
+          status(e.message, "err");
+        }
+      });
+      $("connectBtn").addEventListener("click", async () => {
+        try {
+          if (!window.ethereum)
+            throw new Error(
+              "ไม่พบ MetaMask กรุณาติดตั้งส่วนขยาย MetaMask ในเบราว์เซอร์",
+            );
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          await ensureSepolia();
+          provider = new ethers.BrowserProvider(window.ethereum);
+          signer = await provider.getSigner();
+          account = await signer.getAddress();
+          buildContract();
+          $("walletText").textContent = "Wallet: " + account;
+          $("connectBtn").textContent = "Connected ✓";
+          $("networkPill").textContent = "● Sepolia Connected";
+          setConnected(true);
+          status("เชื่อมต่อ MetaMask และ Smart Contract สำเร็จ", "ok");
+          await checkBalance();
+        } catch (e) {
+          status(e.shortMessage || e.message, "err");
+        }
+      });
+      async function checkBalance() {
+        try {
+          if (!contract) buildContract();
+          const balance = await contract.checkBlance();
+          $("balance").textContent = Number(
+            ethers.formatEther(balance),
+          ).toFixed(6);
+          status("ตรวจสอบยอดเงินสำเร็จ", "ok");
+        } catch (e) {
+          status(e.shortMessage || e.reason || e.message, "err");
+        }
+      }
+      $("checkBtn").addEventListener("click", checkBalance);
+      $("depositBtn").addEventListener("click", async () => {
+        try {
+          const value = $("depositAmount").value;
+          if (!value || Number(value) <= 0)
+            throw new Error("กรุณาระบุจำนวน ETH ที่มากกว่า 0");
+          const tx = await contract.deposit({
+            value: ethers.parseEther(value),
+          });
+          status("กำลังรอธุรกรรมฝากเงินยืนยันบน Sepolia…");
+          await tx.wait();
+          $("depositAmount").value = "";
+          await checkBalance();
+          status("ฝากเงินสำเร็จ · Transaction: " + tx.hash, "ok");
+        } catch (e) {
+          status(e.shortMessage || e.reason || e.message, "err");
+        }
+      });
+      $("withdrawBtn").addEventListener("click", async () => {
+        try {
+          const value = $("withdrawAmount").value;
+          if (!value || Number(value) <= 0)
+            throw new Error("กรุณาระบุจำนวน ETH ที่มากกว่า 0");
+          const tx = await contract.withdraw(ethers.parseEther(value));
+          status("กำลังรอธุรกรรมถอนเงินยืนยันบน Sepolia…");
+          await tx.wait();
+          $("withdrawAmount").value = "";
+          await checkBalance();
+          status("ถอนเงินสำเร็จ · Transaction: " + tx.hash, "ok");
+        } catch (e) {
+          status(e.shortMessage || e.reason || e.message, "err");
+        }
+      });
+      if (window.ethereum) {
+        window.ethereum.on("accountsChanged", () => location.reload());
+        window.ethereum.on("chainChanged", () => location.reload());
+      }
+      getSavedAddress();
+    </script>
+  </body>
+</html>
